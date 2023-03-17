@@ -3,25 +3,52 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use App\Controller\GameController;
 use App\Repository\GameRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Knp\DoctrineBehaviors\Contract\Entity\TimestampableInterface;
+use Knp\DoctrineBehaviors\Model\Timestampable\TimestampableTrait;
+use Symfony\Component\Serializer\Annotation\Groups;
 
-#[ApiResource]
+#[ApiResource(
+    operations:
+    [
+        new Get(
+            normalizationContext: ['groups' => ['read:game:item']],
+        ),
+        new GetCollection(
+            normalizationContext: ['groups' => ['read:game:collection']],
+        ),
+        new Post(
+            uriTemplate: '/games',
+            controller: GameController::class,
+            name: 'game_post'
+        )
+    ]
+)]
 #[ORM\Entity(repositoryClass: GameRepository::class)]
-class Game
+class Game implements TimestampableInterface
 {
+    use TimestampableTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToMany(targetEntity: Player::class, inversedBy: 'gamesPlayed')]
+
+    #[ORM\OneToMany(mappedBy: 'game', targetEntity: PlayerOnGame::class,orphanRemoval: true)]
+    #[Groups(['read:game:item','read:game:collection'])]
     private Collection $players;
 
-    #[ORM\ManyToOne]
-    private ?Player $winner = null;
+    #[ORM\Column]
+    private ?bool $isFinish = null;
+
 
     public function __construct()
     {
@@ -33,39 +60,83 @@ class Game
         return $this->id;
     }
 
+
     /**
-     * @return Collection<int, Player>
+     * @return Collection<int, PlayerOnGame>
      */
     public function getPlayers(): Collection
     {
         return $this->players;
     }
 
-    public function addPlayer(Player $player): self
+    public function addPlayer(PlayerOnGame $playerOnGame): self
     {
-        if (!$this->players->contains($player)) {
-            $this->players->add($player);
+        if (!$this->players->contains($playerOnGame)) {
+            $this->players->add($playerOnGame);
+            $playerOnGame->setGame($this);
         }
 
         return $this;
     }
 
-    public function removePlayer(Player $player): self
+    public function removePlayer(PlayerOnGame $player): self
     {
-        $this->players->removeElement($player);
+        if ($this->players->removeElement($player)) {
+            // set the owning side to null (unless already changed)
+            if ($player->getGame() === $this) {
+                $player->setGame(null);
+            }
+        }
 
         return $this;
     }
 
-    public function getWinner(): ?Player
-    {
-        return $this->winner;
-    }
 
-    public function setWinner(?Player $winner): self
-    {
-        $this->winner = $winner;
+//    /**
+//     * @return Collection<int, Player>
+//     */
+//    public function getPlayers(): Collection
+//    {
+//        return $this->players;
+//    }
+//
+//    public function addPlayer(Player $player): self
+//    {
+//        if (!$this->players->contains($player)) {
+//            $this->players->add($player);
+//        }
+//
+//        return $this;
+//    }
+//
+//    public function removePlayer(Player $player): self
+//    {
+//        $this->players->removeElement($player);
+//
+//        return $this;
+//    }
+//
+//    public function getWinner(): ?Player
+//    {
+//        return $this->winner;
+//    }
+//
+//    public function setWinner(?Player $winner): self
+//    {
+//        $this->winner = $winner;
+//
+//        return $this;
+//    }
 
-        return $this;
-    }
+public function getIsFinish(): ?bool
+{
+    return $this->isFinish;
+}
+
+public function setIsFinish(bool $isFinish): self
+{
+    $this->isFinish = $isFinish;
+
+    return $this;
+}
 }
