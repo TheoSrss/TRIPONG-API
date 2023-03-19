@@ -5,6 +5,7 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
 use App\Repository\PlayerRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -21,6 +22,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
         new GetCollection(
             normalizationContext: ['groups' => ['read:player:collection']],
         ),
+        new Post()
     ]
 )]
 #[ORM\Entity(repositoryClass: PlayerRepository::class)]
@@ -31,6 +33,7 @@ class Player implements TimestampableInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['read:player:item','read:player:collection','read:game:item','read:game:collection'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
@@ -120,6 +123,16 @@ class Player implements TimestampableInterface
         }
 
         return $this;
+    }
+
+    public function toArray()
+    {
+        return [
+            'id' => $this->getId(),
+            'name' => $this->getName(),
+            'createdAt' => $this->getCreatedAt(),
+            'updatedAt' => $this->getUpdatedAt(),
+        ];
     }
 
 }

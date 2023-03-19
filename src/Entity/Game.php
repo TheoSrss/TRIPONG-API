@@ -16,8 +16,7 @@ use Knp\DoctrineBehaviors\Model\Timestampable\TimestampableTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ApiResource(
-    operations:
-    [
+    operations: [
         new Get(
             normalizationContext: ['groups' => ['read:game:item']],
         ),
@@ -42,8 +41,8 @@ class Game implements TimestampableInterface
     private ?int $id = null;
 
 
-    #[ORM\OneToMany(mappedBy: 'game', targetEntity: PlayerOnGame::class,orphanRemoval: true)]
-    #[Groups(['read:game:item','read:game:collection'])]
+    #[ORM\OneToMany(mappedBy: 'game', targetEntity: PlayerOnGame::class, orphanRemoval: true)]
+    #[Groups(['read:game:item', 'read:game:collection'])]
     private Collection $players;
 
     #[ORM\Column]
@@ -92,51 +91,23 @@ class Game implements TimestampableInterface
     }
 
 
-//    /**
-//     * @return Collection<int, Player>
-//     */
-//    public function getPlayers(): Collection
-//    {
-//        return $this->players;
-//    }
-//
-//    public function addPlayer(Player $player): self
-//    {
-//        if (!$this->players->contains($player)) {
-//            $this->players->add($player);
-//        }
-//
-//        return $this;
-//    }
-//
-//    public function removePlayer(Player $player): self
-//    {
-//        $this->players->removeElement($player);
-//
-//        return $this;
-//    }
-//
-//    public function getWinner(): ?Player
-//    {
-//        return $this->winner;
-//    }
-//
-//    public function setWinner(?Player $winner): self
-//    {
-//        $this->winner = $winner;
-//
-//        return $this;
-//    }
+    public function getIsFinish(): ?bool
+    {
+        return $this->isFinish;
+    }
 
-public function getIsFinish(): ?bool
-{
-    return $this->isFinish;
-}
+    public function setIsFinish(bool $isFinish): self
+    {
+        $this->isFinish = $isFinish;
 
-public function setIsFinish(bool $isFinish): self
-{
-    $this->isFinish = $isFinish;
-
-    return $this;
-}
+        return $this;
+    }
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->getId(),
+            'isFinish' => $this->getIsFinish(),
+            'players' => $this->getPlayers()->map(fn(PlayerOnGame $playerOnGame) => $playerOnGame->toArray())->toArray()
+        ];
+    }
 }

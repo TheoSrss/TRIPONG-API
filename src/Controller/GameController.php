@@ -52,8 +52,9 @@ class GameController extends AbstractController
             $entityManager->persist($game);
             $entityManager->persist($game);
             $entityManager->flush();
-
-            return new JsonResponse($serializer->serialize($game, 'json'), Response::HTTP_CREATED);
+//dd($game);
+//            return $this->json($game);
+            return new JsonResponse($game->toArray(), Response::HTTP_CREATED);
         }catch (\Exception $e){
             return new JsonResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }

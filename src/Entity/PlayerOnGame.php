@@ -88,4 +88,14 @@ class PlayerOnGame implements TimestampableInterface
         return $this;
     }
 
+    public function toArray()
+    {
+        return [
+            'id' => $this->getId(),
+            'player' => $this->getPlayer()->toArray(),
+            'game' => $this->getGame()->toArray(),
+            'ranking' => $this->getRanking(),
+        ];
+    }
+
 }
