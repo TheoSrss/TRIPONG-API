@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Game;
 use App\Entity\PlayerOnGame;
+use App\Repository\GameRepository;
 use App\Repository\PlayerRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -30,7 +31,8 @@ class GameController extends AbstractController
     public function post(
         Request                $request,
         EntityManagerInterface $entityManager,
-        PlayerRepository       $playerRepository
+        PlayerRepository       $playerRepository,
+        GameRepository         $gameRepository
     ): JsonResponse
     {
         try {
@@ -52,9 +54,7 @@ class GameController extends AbstractController
             $entityManager->persist($game);
             $entityManager->persist($game);
             $entityManager->flush();
-//dd($game);
-//            return $this->json($game);
-            return new JsonResponse($game->toArray(), Response::HTTP_CREATED);
+            return new JsonResponse($game->getId(), Response::HTTP_CREATED);
         }catch (\Exception $e){
             return new JsonResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }

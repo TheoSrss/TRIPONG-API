@@ -38,6 +38,7 @@ class Game implements TimestampableInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['read:game:item', 'read:game:collection'])]
     private ?int $id = null;
 
 
@@ -46,6 +47,7 @@ class Game implements TimestampableInterface
     private Collection $players;
 
     #[ORM\Column]
+    #[Groups(['read:game:item', 'read:game:collection'])]
     private ?bool $isFinish = null;
 
 
@@ -104,10 +106,11 @@ class Game implements TimestampableInterface
     }
     public function toArray(): array
     {
+//        dd($this->players);
         return [
             'id' => $this->getId(),
             'isFinish' => $this->getIsFinish(),
-            'players' => $this->getPlayers()->map(fn(PlayerOnGame $playerOnGame) => $playerOnGame->toArray())->toArray()
+            'players' => $this->getPlayers()->toArray()
         ];
     }
 }
